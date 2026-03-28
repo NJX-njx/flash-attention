@@ -1,0 +1,19 @@
+## Summary
+This fix addresses issue #2071 by adding a setup_context static method to the FlashAttnFunc class.
+
+## Problem
+Using FlashAttnFunc with functorch transforms (torch.func.grad, torch.func.vmap, etc.) raises:
+RuntimeError: In order to use an autograd.Function with functorch transforms (vmap, grad, jvp, jacrev, ...), it must override the setup_context static method.
+
+## Solution
+Added a setup_context static method to FlashAttnFunc that properly saves tensors for backward when using torch.func.grad or other functorch transforms.
+
+The method handles:
+1. Padding of tensors when head_dim is not a multiple of 8
+2. Proper context saving for both grad-enabled and non-grad cases
+3. Saving of all necessary parameters for backward pass
+
+## Testing
+This fix enables using flash_attn_func with torch.func.grad
+
+Closes #2071
